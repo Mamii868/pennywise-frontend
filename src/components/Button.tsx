@@ -10,7 +10,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    "px-6 py-3 rounded-full font-bold transition-all duration-300 text-sm hover:cursor-pointer";
+    "px-6 py-3 rounded-xl font-bold transition-all duration-300 text-sm hover:cursor-pointer";
 
   const variants = {
     primary:

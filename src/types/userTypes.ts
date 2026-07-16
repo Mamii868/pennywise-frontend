@@ -1,14 +1,18 @@
 export type User = {
   id: string;
+  firstName: string;
+  lastName: string;
   username: string;
-  password?: string;
-  role: string;
+  email: string;
+  role?: string;
 };
 
 export type CreateUserPayload = {
+  firstName: string;
+  lastName: string;
+  email: string;
   username: string;
   password: string;
-  [key: string]: unknown;
 };
 
 export type UpdateUserPayload = {

@@ -1,9 +1,15 @@
 export type Transaction = {
   id: number;
+  description: string;
+  vendor: string;
+  amount: number | string;
   userId: string;
-  [key: string]: unknown;
+  createdAt: string;
+  reference: string;
 };
 
 export type TransactionPayload = {
-  [key: string]: unknown;
+  description: string;
+  vendor: string;
+  amount: number;
 };

@@ -105,7 +105,7 @@ const AuthModal = ({
           </div>
           <button
             aria-label="Close authentication window"
-            className="text-dark-subtext hover:bg-dark-bg hover:text-dark-text rounded-full px-3 py-1 text-2xl transition"
+            className="text-dark-subtext hover:bg-dark-bg hover:text-dark-text rounded-full px-3 py-1 text-2xl transition cursor-pointer"
             disabled={isSubmitting}
             onClick={onClose}
             type="button"
@@ -116,7 +116,7 @@ const AuthModal = ({
 
         <div className="bg-dark-bg mb-6 grid grid-cols-2 rounded-xl p-1">
           <button
-            className={`rounded-lg px-3 py-2 text-sm font-bold transition ${
+            className={`rounded-lg px-3 py-2 text-sm font-bold transition cursor-pointer ${
               !isSigningUp ? "bg-clown-red text-dark-text" : "text-dark-subtext"
             }`}
             disabled={isSubmitting}
@@ -126,7 +126,7 @@ const AuthModal = ({
             Sign in
           </button>
           <button
-            className={`rounded-lg px-3 py-2 text-sm font-bold transition ${
+            className={`rounded-lg px-3 py-2 text-sm font-bold transition cursor-pointer ${
               isSigningUp ? "bg-clown-red text-dark-text" : "text-dark-subtext"
             }`}
             disabled={isSubmitting}

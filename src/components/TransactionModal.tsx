@@ -87,7 +87,7 @@ const TransactionModal = ({
           </div>
           <button
             aria-label="Close transaction window"
-            className="text-dark-subtext hover:bg-dark-bg hover:text-dark-text rounded-full px-3 py-1 text-2xl transition"
+            className="text-dark-subtext hover:bg-dark-bg hover:text-dark-text rounded-full px-3 py-1 text-2xl transition cursor-pointer"
             disabled={isSubmitting}
             onClick={onClose}
             type="button"

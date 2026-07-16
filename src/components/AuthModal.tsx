@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { createUser } from "../api/user/createUser";
 import { loginUser } from "../api/user/loginUser";
 import type { User } from "../types/userTypes";
@@ -7,55 +7,37 @@ import Button from "./Button";
 type AuthMode = "login" | "signup";
 
 type AuthModalProps = {
-  isOpen: boolean;
   initialMode: AuthMode;
   onClose: () => void;
   onAuthenticated: (user: User) => void;
 };
 
+const emptyForm = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  username: "",
+  password: "",
+};
+
 const AuthModal = ({
-  isOpen,
   initialMode,
   onClose,
   onAuthenticated,
 }: AuthModalProps) => {
   const [mode, setMode] = useState<AuthMode>(initialMode);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+  const updateField = (field: keyof typeof form, value: string) => {
+    setForm((currentForm) => ({ ...currentForm, [field]: value }));
+  };
 
-    setMode(initialMode);
-    setUsername("");
-    setPassword("");
-    setConfirmPassword("");
+  const selectMode = (nextMode: AuthMode) => {
+    setMode(nextMode);
     setError("");
-  }, [initialMode, isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !isSubmitting) {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [isOpen, isSubmitting, onClose]);
-
-  if (!isOpen) {
-    return null;
-  }
+  };
 
   const isSigningUp = mode === "signup";
 
@@ -63,23 +45,23 @@ const AuthModal = ({
     event.preventDefault();
     setError("");
 
-    if (isSigningUp && password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      const credentials = { username: username.trim(), password };
-      let user: User | null;
-
+      const credentials = {
+        username: form.username.trim(),
+        password: form.password,
+      };
       if (isSigningUp) {
-        await createUser(credentials);
-        user = await loginUser(credentials);
-      } else {
-        user = await loginUser(credentials);
+        await createUser({
+          ...credentials,
+          firstName: form.firstName.trim(),
+          lastName: form.lastName.trim(),
+          email: form.email.trim(),
+        });
       }
+
+      const user = await loginUser(credentials);
 
       if (!user) {
         setError("Invalid username or password.");
@@ -111,10 +93,10 @@ const AuthModal = ({
       }}
       role="dialog"
     >
-      <section className="w-full max-w-md rounded-3xl border border-clown-red/40 bg-dark-lightbg p-6 shadow-2xl shadow-black/50 sm:p-8">
+      <section className="border-clown-red/40 bg-dark-lightbg w-full max-w-md rounded-3xl border p-6 shadow-2xl shadow-black/50 sm:p-8">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold tracking-[0.2em] text-clown-red uppercase">
+            <p className="text-clown-red text-sm font-semibold tracking-[0.2em] uppercase">
               Penny Wise
             </p>
             <h2 className="mt-1 text-2xl font-bold" id="auth-modal-title">
@@ -123,25 +105,22 @@ const AuthModal = ({
           </div>
           <button
             aria-label="Close authentication window"
-            className="rounded-full px-3 py-1 text-2xl text-dark-subtext transition hover:bg-dark-bg hover:text-dark-text"
+            className="text-dark-subtext hover:bg-dark-bg hover:text-dark-text rounded-full px-3 py-1 text-2xl transition"
             disabled={isSubmitting}
             onClick={onClose}
             type="button"
           >
-            ×
+            X
           </button>
         </div>
 
-        <div className="mb-6 grid grid-cols-2 rounded-xl bg-dark-bg p-1">
+        <div className="bg-dark-bg mb-6 grid grid-cols-2 rounded-xl p-1">
           <button
             className={`rounded-lg px-3 py-2 text-sm font-bold transition ${
               !isSigningUp ? "bg-clown-red text-dark-text" : "text-dark-subtext"
             }`}
             disabled={isSubmitting}
-            onClick={() => {
-              setMode("login");
-              setError("");
-            }}
+            onClick={() => selectMode("login")}
             type="button"
           >
             Sign in
@@ -151,10 +130,7 @@ const AuthModal = ({
               isSigningUp ? "bg-clown-red text-dark-text" : "text-dark-subtext"
             }`}
             disabled={isSubmitting}
-            onClick={() => {
-              setMode("signup");
-              setError("");
-            }}
+            onClick={() => selectMode("signup")}
             type="button"
           >
             Sign up
@@ -162,54 +138,106 @@ const AuthModal = ({
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <label className="block text-sm font-semibold" htmlFor="auth-username">
+          {isSigningUp && (
+            <>
+              <label
+                className="block text-sm font-semibold"
+                htmlFor="auth-first-name"
+              >
+                First name
+                <input
+                  autoComplete="given-name"
+                  className="border-dark-subtext/30 bg-dark-bg text-dark-text focus:border-clown-red mt-2 w-full rounded-xl border px-4 py-3 transition outline-none"
+                  disabled={isSubmitting}
+                  id="auth-first-name"
+                  maxLength={45}
+                  onChange={(event) =>
+                    updateField("firstName", event.target.value)
+                  }
+                  pattern="[^<>]*"
+                  required
+                  value={form.firstName}
+                />
+              </label>
+
+              <label
+                className="block text-sm font-semibold"
+                htmlFor="auth-last-name"
+              >
+                Last name
+                <input
+                  autoComplete="family-name"
+                  className="border-dark-subtext/30 bg-dark-bg text-dark-text focus:border-clown-red mt-2 w-full rounded-xl border px-4 py-3 transition outline-none"
+                  disabled={isSubmitting}
+                  id="auth-last-name"
+                  maxLength={45}
+                  onChange={(event) => updateField("lastName", event.target.value)}
+                  pattern="[^<>]*"
+                  required
+                  value={form.lastName}
+                />
+              </label>
+
+              <label className="block text-sm font-semibold" htmlFor="auth-email">
+                Email
+                <input
+                  autoComplete="email"
+                  className="border-dark-subtext/30 bg-dark-bg text-dark-text focus:border-clown-red mt-2 w-full rounded-xl border px-4 py-3 transition outline-none"
+                  disabled={isSubmitting}
+                  id="auth-email"
+                  maxLength={100}
+                  onChange={(event) => updateField("email", event.target.value)}
+                  required
+                  type="email"
+                  value={form.email}
+                />
+              </label>
+            </>
+          )}
+
+          <label
+            className="block text-sm font-semibold"
+            htmlFor="auth-username"
+          >
             Username
             <input
               autoComplete="username"
-              className="mt-2 w-full rounded-xl border border-dark-subtext/30 bg-dark-bg px-4 py-3 text-dark-text outline-none transition focus:border-clown-red"
+              className="border-dark-subtext/30 bg-dark-bg text-dark-text focus:border-clown-red mt-2 w-full rounded-xl border px-4 py-3 transition outline-none"
               disabled={isSubmitting}
               id="auth-username"
-              minLength={1}
-              onChange={(event) => setUsername(event.target.value)}
+              maxLength={30}
+              minLength={2}
+              onChange={(event) => updateField("username", event.target.value)}
+              pattern="[a-zA-Z0-9._-]+"
               required
-              value={username}
+              value={form.username}
             />
           </label>
 
-          <label className="block text-sm font-semibold" htmlFor="auth-password">
+          <label
+            className="block text-sm font-semibold"
+            htmlFor="auth-password"
+          >
             Password
             <input
               autoComplete={isSigningUp ? "new-password" : "current-password"}
-              className="mt-2 w-full rounded-xl border border-dark-subtext/30 bg-dark-bg px-4 py-3 text-dark-text outline-none transition focus:border-clown-red"
+              className="border-dark-subtext/30 bg-dark-bg text-dark-text focus:border-clown-red mt-2 w-full rounded-xl border px-4 py-3 transition outline-none"
               disabled={isSubmitting}
               id="auth-password"
-              minLength={1}
-              onChange={(event) => setPassword(event.target.value)}
+              maxLength={100}
+              minLength={8}
+              onChange={(event) => updateField("password", event.target.value)}
               required
               type="password"
-              value={password}
+              value={form.password}
             />
           </label>
 
-          {isSigningUp && (
-            <label className="block text-sm font-semibold" htmlFor="auth-confirm-password">
-              Confirm password
-              <input
-                autoComplete="new-password"
-                className="mt-2 w-full rounded-xl border border-dark-subtext/30 bg-dark-bg px-4 py-3 text-dark-text outline-none transition focus:border-clown-red"
-                disabled={isSubmitting}
-                id="auth-confirm-password"
-                minLength={1}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-                required
-                type="password"
-                value={confirmPassword}
-              />
-            </label>
-          )}
-
           {error && (
-            <p className="rounded-xl border border-clown-red/60 bg-blood-red/20 px-3 py-2 text-sm text-dark-text" role="alert">
+            <p
+              className="border-clown-red/60 bg-blood-red/20 text-dark-text rounded-xl border px-3 py-2 text-sm"
+              role="alert"
+            >
               {error}
             </p>
           )}

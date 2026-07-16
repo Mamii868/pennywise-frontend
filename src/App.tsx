@@ -32,12 +32,13 @@ function App() {
         onSignIn={() => openAuthModal("login")}
         onSignUp={() => openAuthModal("signup")}
       />
-      <AuthModal
-        initialMode={authMode}
-        isOpen={isAuthModalOpen}
-        onAuthenticated={setCurrentUser}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
+      {isAuthModalOpen && (
+        <AuthModal
+          initialMode={authMode}
+          onAuthenticated={setCurrentUser}
+          onClose={() => setIsAuthModalOpen(false)}
+        />
+      )}
     </>
   );
 }
